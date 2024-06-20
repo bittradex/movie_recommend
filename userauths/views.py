@@ -10,33 +10,23 @@ from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 
+
 def register_view(request):
     form = UserRegisterForm(request.POST)
     if request.method == "POST":
         if form.is_valid():
-            try:
-                
-                new_user = form.save(commit=False)  # Don't save the user yet
-                new_user.email_verified = False
-                new_user.save()
+            new_user = form.save()
+            messages.success(request, f"Account created successfully")
+            new_user = authenticate(username=form.cleaned_data['email'],
+                                    password=form.cleaned_data['password']
+            )
+            login(request, new_user)
+            return redirect("core:home")
+    context = {
+        'form': form,
+    }
+    return render(request, 'user/register.html', context)
 
-                fullname = form.cleaned_data.get("full_name")
-                
-                new_user = authenticate(username=form.cleaned_data['email'],
-                                        password=form.cleaned_data['password']
-                )
-                login(request, new_user)
-       
-                return render(request,"core/index.html",{'message': f"Account created successfully"})
-            
-            except IntegrityError as e:
-               
-                form.add_error('email', 'This email address is already in use.')
-        
-        errors = form.errors.as_json()
-        return JsonResponse(request,"user/register.html",{'errors': errors})
-
-    return render(request, "user/register.html")
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -50,16 +40,15 @@ def login_view(request):
             user = authenticate(request, email=email, password=password)
             if user is not None:
                 login(request, user)
+                
+                messages.success(request, f"Successfully logged in.")
                 return redirect("core:home")
             else:
-                
-                return redirect("userauths:sign-in")
-        except User.DoesNotExist:
-           
-            return redirect("userauths:sign-in")
+                messages.warning(request, "User Doesn't Exist, create an account.")
+        except:
+            messages.warning(request, f"User with {email} does not exist")
 
-
-    return render(request, "user/login.html")
+    return render(request, 'user/login.html')
 
 
 def account_view(request):
