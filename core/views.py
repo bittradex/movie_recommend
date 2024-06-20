@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from .fetch import get_popular_movies, get_movie_details, extract_movie_info, get_top_grossing_movies, API_KEY
+# from .fetch import get_popular_movies, get_movie_details, extract_movie_info, get_top_grossing_movies, API_KEY
 from .utils import generate_star_html
 from .models import Movie, GrossingMovie
-import requests
+# import requests
 # Create your views here.
 
 # def update_movie_videos():
